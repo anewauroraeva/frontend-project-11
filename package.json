@@ -1,5 +1,5 @@
 {
-  "name": "frontend-project-11",
+  "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "[![Actions Status](https://github.com/anewauroraeva/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/anewauroraeva/frontend-project-11/actions)",
   "main": "index.js",
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/anewauroraeva/frontend-project-11.git"
   },
-  "author": "Eugenia K",
+  "author": "anewauroraeva",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/anewauroraeva/frontend-project-11/issues"
@@ -20,5 +20,9 @@
     "eslint": "^8.55.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1"
+  },
+  "dependencies": {
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   }
 }
