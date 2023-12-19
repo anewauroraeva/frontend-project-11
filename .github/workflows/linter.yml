@@ -1,0 +1,20 @@
+name: linter
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          cache: npm
+      - run: make install
+      - run: make lint
+      - name: Run linter to check syntax
+        uses: paambaati/codeclimate-action@v3.2.0
+        env:
+          CI: true
+          # CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} secret in settings!!
+          # GITHUB_TOKEN: 
