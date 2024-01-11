@@ -1,35 +1,41 @@
-import validate from './validate.js';
+import validateURL from './validate.js';
 import render from './view.js';
 
-const state = {
-  isValid: null,
-  links: [],
-  submitMessage: '',
-  submitState: {
-    success: {
-      message: 'RSS успешно загружен',
+const runApp = async () => {
+  const state = {
+    isValid: null,
+    links: [],
+    submitMessage: '',
+    submitState: {
+      success: {
+        message: 'RSS успешно загружен',
+      },
+      invalidRss: {
+        message: 'Ресурс не содержит валидный RSS',
+      },
+      duplicate: {
+        message: 'RSS уже существует',
+      },
+      invalidUrl: {
+        message: 'Ссылка должна быть валидным URL',
+      },
     },
-    invalidRss: {
-      message: 'Ресурс не содержит валидный RSS',
-    },
-    duplicate: {
-      message: 'RSS уже существует',
-    },
-    invalidUrl: {
-      message: 'Ссылка должна быть валидным URL',
-    },
-  },
-};
+  };
 
-const app = async () => {
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('#url-input'),
-    message: document.querySelector('.feedback'),
+    submit: document.querySelector('button[type=submit]'),
+    feedback: document.querySelector('.feedback'),
   };
-  elements.form.addEventListener('submit', (e) => {
+  elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const isValidInput = validate(elements.input.value);
+    console.log(elements.input.value);
+    const formData = new FormData(elements.form, elements.submit);
+    formData.append('url', elements.input.value);
+    // const url = formData.get('url');
+    console.log(formData);
+    /* const isValidInput = await validateURL(elements.input.value, state.links);
     if (!isValidInput) {
       state.isValid = false;
       state.submitMessage = state.submitState.invalidUrl.message;
@@ -44,11 +50,9 @@ const app = async () => {
       state.submitMessage = state.submitState.invalidRss.message;
     }
     state.isValid = true;
-    state.submitMessage = state.submitState.success.message;
-    /* if there's rss - isValid true, submit message = success message
-      if no rss - isvalid false, submit message = invalidrss message */
+    state.submitMessage = state.submitState.success.message; */
   });
   render(state, elements);
 };
 
-export default app;
+export default runApp;
