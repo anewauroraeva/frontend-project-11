@@ -1,15 +1,15 @@
 import onChange from 'on-change';
-import validate from './validate.js';
 
-console.log(validate('https://lorem-rss.hexlet.app/feed'));
+// console.log(validate('https://lorem-rss.hexlet.app/feed'));
 
 const render = (state, elements) => {
   const watchedState = onChange(state, () => {
-    const { form, message } = elements;
+    const { form, feedback } = elements;
+    console.log(feedback);
     if (watchedState.isValid) {
-      message.classList.remove('text-danger');
-      message.classList.add('text-success');
-      message.textContent = watchedState.submitMessage;
+      feedback.classList.remove('text-danger');
+      feedback.classList.add('text-success');
+      feedback.textContent = watchedState.submitMessage;
       form.reset();
       form.focus();
     }
@@ -17,5 +17,3 @@ const render = (state, elements) => {
 };
 
 export default render;
-
-console.log(document.querySelectorAll('.col-md-10'));
