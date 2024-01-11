@@ -1,10 +1,13 @@
 import * as yup from 'yup';
 
-const schema = yup.string().url().required('Ссылка должна быть валидным URL'); // ('Ссылка должна быть валидным URL');
-
-const validate = async (url) => {
-  await schema.validate(url);
-  // returns promise
+const validateURL = (url, links) => {
+  const schema = yup.string().url().required().notOneOf(links);
+  console.log(links);
+  return schema
+    .validate(url)
+    .then(() => null)
+    .catch((err) => err.message);
 };
+
 // console.log(validate('https://lorem-rss.hexlet.app/feed'));
-export default validate;
+export default validateURL;
