@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 
 const validateURL = (url, links) => {
-  const schema = yup.string().url().required().notOneOf(links);
+  const schema = yup.string().url().required().notOneOf(links, 'ima not adding double');
   console.log(links);
   return schema
     .validate(url)

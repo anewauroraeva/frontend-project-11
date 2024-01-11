@@ -1,3 +1,4 @@
+import onChange from 'on-change';
 import validateURL from './validate.js';
 import render from './view.js';
 
@@ -5,8 +6,10 @@ const runApp = async () => {
   const state = {
     isValid: null,
     links: [],
-    submitMessage: '',
-    submitState: {
+    submitState: 'idle',
+    successMessage: 'RSS успешно загружен',
+    submitError: '',
+    /* submitState: { // надо будет сделать одну ошибку, нижнее всё в перевод
       success: {
         message: 'RSS успешно загружен',
       },
@@ -19,7 +22,7 @@ const runApp = async () => {
       invalidUrl: {
         message: 'Ссылка должна быть валидным URL',
       },
-    },
+    }, */
   };
 
   const elements = {
@@ -28,31 +31,45 @@ const runApp = async () => {
     submit: document.querySelector('button[type=submit]'),
     feedback: document.querySelector('.feedback'),
   };
+
+  const watchedState = onChange(state, () => { // add decent callback
+    if (watchedState.isValid) {
+      // after successful submit - rss loaded
+      // state.submitState.success - message for feedback p
+      // render(watchedState, elements)
+      console.log('wState is valid');
+      // return;
+    }
+    if (watchedState.isValid === false) {
+      /* feedback.classList.remove('text-danger');
+      feedback.classList.add('text-success');
+      feedback.textContent = watchedState.submitMessage;
+      form.reset();
+      form.focus(); */
+    }
+    render(watchedState, elements);
+  });
+
   elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log(elements.input.value);
-    const formData = new FormData(elements.form, elements.submit);
-    formData.append('url', elements.input.value);
-    // const url = formData.get('url');
-    console.log(formData);
-    /* const isValidInput = await validateURL(elements.input.value, state.links);
-    if (!isValidInput) {
-      state.isValid = false;
-      state.submitMessage = state.submitState.invalidUrl.message;
+    const result = await validateURL(elements.input.value, state.links);
+    // rename result
+    // console.log(result); +
+    if (!result) {
+      watchedState.isValid = true;
+      const formData = new FormData(elements.form, elements.submit);
+      const url = formData.get('url');
+      // console.log(url); +
+      watchedState.links.push(url);
     }
-    if (state.links.includes(elements.input.value)) {
-      state.isValid = false;
-      state.submitMessage = state.submitState.duplicate.message;
+    if (result) {
+      watchedState.isValid = false;
+      watchedState.submitError = result;
     }
-    const response = 'request to server'; // !!!!!!!!
-    if (!response) {
-      state.isValid = false;
-      state.submitMessage = state.submitState.invalidRss.message;
-    }
-    state.isValid = true;
-    state.submitMessage = state.submitState.success.message; */
+    console.log(state);
+
+    render(state, elements);
   });
-  render(state, elements);
 };
 
 export default runApp;
