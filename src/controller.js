@@ -1,8 +1,10 @@
 import onChange from 'on-change';
+// import i18next from 'i18next';
 import validateURL from './validate.js';
 import render from './view.js';
+// import resources from './locales/index.js';
 
-const runApp = async () => {
+const app = async () => {
   const state = {
     isValid: null,
     links: [],
@@ -33,20 +35,6 @@ const runApp = async () => {
   };
 
   const watchedState = onChange(state, () => { // add decent callback
-    if (watchedState.isValid) {
-      // after successful submit - rss loaded
-      // state.submitState.success - message for feedback p
-      // render(watchedState, elements)
-      console.log('wState is valid');
-      // return;
-    }
-    if (watchedState.isValid === false) {
-      /* feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
-      feedback.textContent = watchedState.submitMessage;
-      form.reset();
-      form.focus(); */
-    }
     render(watchedState, elements);
   });
 
@@ -70,6 +58,17 @@ const runApp = async () => {
 
     render(state, elements);
   });
+
+  /* const runApp = async () => {
+    const defaultLanguage = 'ru';
+    const i18nInstance = i18next.createInstance();
+    await i18nInstance.init({
+      defaultLanguage,
+      debug: false,
+      resources,
+    });
+    // render(watchedState, i18nInstance)
+  }; */
 };
 
-export default runApp;
+export default app; // or app???

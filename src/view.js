@@ -1,3 +1,5 @@
+// import i18next from 'i18next';
+
 const render = (state, elements) => {
   const { form, feedback } = elements;
   if (state.isValid) {
@@ -8,6 +10,8 @@ const render = (state, elements) => {
     form.focus();
   }
   if (state.isValid === false) {
+    feedback.classList.remove('text-success');
+    feedback.classList.add('text-danger');
     feedback.textContent = state.submitError;
   }
   /* const watchedState = onChange(state, () => {
