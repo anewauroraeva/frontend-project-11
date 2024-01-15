@@ -1,6 +1,6 @@
 // import i18next from 'i18next';
 
-const render = (state, elements) => {
+const render = (state, instance, elements) => {
   const { form, feedback } = elements;
   if (state.isValid) {
     feedback.classList.remove('text-danger');

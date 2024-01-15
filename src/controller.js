@@ -1,31 +1,26 @@
 import onChange from 'on-change';
-// import i18next from 'i18next';
+import i18n from 'i18next';
 import validateURL from './validate.js';
 import render from './view.js';
-// import resources from './locales/index.js';
+import ru from './locales/index.js';
+import yup from 'yup';
 
 const app = async () => {
   const state = {
     isValid: null,
     links: [],
+    defaultLanguage: 'ru',
     submitState: 'idle',
-    successMessage: 'RSS успешно загружен',
     submitError: '',
-    /* submitState: { // надо будет сделать одну ошибку, нижнее всё в перевод
-      success: {
-        message: 'RSS успешно загружен',
-      },
-      invalidRss: {
-        message: 'Ресурс не содержит валидный RSS',
-      },
-      duplicate: {
-        message: 'RSS уже существует',
-      },
-      invalidUrl: {
-        message: 'Ссылка должна быть валидным URL',
-      },
-    }, */
+    feedback: {
+      success: i18n.t('feedback.example'),
+      invalidRss: i18n.t('example'),
+      invalidUrl: '',
+      duplicate: '',
+    },
   };
+
+  console.log(state.feedback.invalidRss);
 
   const elements = {
     form: document.querySelector('.rss-form'),
@@ -34,9 +29,25 @@ const app = async () => {
     feedback: document.querySelector('.feedback'),
   };
 
-  const watchedState = onChange(state, () => { // add decent callback
-    render(watchedState, elements);
-  });
+  const { defaultLanguage } = state.defaultLanguage;
+  const i18nInstance = i18n.createInstance();
+  await i18nInstance.init({
+    defaultLanguage,
+    debug: false,
+    resources: { ru },
+  })
+    .then(() => {
+      yup.setLocale({
+        mixed: {
+          notOneOf: i18nInstance.t('links'),
+        },
+        string: {
+          url: i18nInstance.t('feedback.invalidUrl'),
+        },
+      }),
+    });
+
+  const watchedState = onChange(state, render(watchedState, i18nInstance, elements));
 
   elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -56,19 +67,10 @@ const app = async () => {
     }
     console.log(state);
 
-    render(state, elements);
+    // render(state, elements);
   });
 
-  /* const runApp = async () => {
-    const defaultLanguage = 'ru';
-    const i18nInstance = i18next.createInstance();
-    await i18nInstance.init({
-      defaultLanguage,
-      debug: false,
-      resources,
-    });
-    // render(watchedState, i18nInstance)
-  }; */
+  // render(watchedState, i18nInstance, elements);
 };
 
 export default app; // or app???
