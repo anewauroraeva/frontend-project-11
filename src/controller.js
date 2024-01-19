@@ -2,6 +2,7 @@ import onChange from 'on-change';
 import i18n from 'i18next';
 import * as yup from 'yup';
 // import _ from 'lodash';
+// import parcer from './parcer.js';
 import render from './view.js';
 import ru from './locales/index.js';
 
@@ -69,12 +70,13 @@ const app = async () => {
     watchedState.formState = 'sending';
     const formData = new FormData(e.target);
     const url = formData.get('url');
+    console.log(url);
     validateURL(url, watchedState.addedLinks, i18nInstance)
       .then((data) => {
         console.log('valid');
         watchedState.form.isValid = true;
         watchedState.errorMessage = '';
-        // const validUrl = { id: _.uniqueId(), url: data };
+        // const validUrl = { id: _.uniqueId(), url };
         watchedState.addedLinks.push(data);
       })
       .catch((err) => {
@@ -86,6 +88,8 @@ const app = async () => {
     watchedState.form.isValid = null;
     console.log(watchedState);
   });
+
+  // сюда аксиос с гет (юрл)
   console.log(watchedState);
 };
 
