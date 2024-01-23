@@ -1,8 +1,9 @@
 import onChange from 'on-change';
 import i18n from 'i18next';
 import * as yup from 'yup';
-// import _ from 'lodash';
-// import parcer from './parcer.js';
+// import { uniqueId } from 'lodash';
+import axios from 'axios';
+import parse from './parser.js';
 import render from './view.js';
 import ru from './locales/index.js';
 
@@ -28,6 +29,12 @@ const validateURL = async (url, addedLinks, i18nInstance) => {
   }
 };
 
+const getRssData = (link) => {
+  const allOrigins = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(link)}`;
+  return axios.get(allOrigins, { timeout: 10000 });
+};
+// console.log(getRssData('https://lorem-rss.hexlet.app/feed'));
+
 const app = async () => {
   const elements = {
     form: document.querySelector('.rss-form'),
@@ -35,7 +42,7 @@ const app = async () => {
     submit: document.querySelector('button[type=submit]'),
     feedback: document.querySelector('.feedback'),
   };
-  const { form } = elements; // , input, submit
+  const { form } = elements;
 
   const i18nInstance = i18n.createInstance();
   await i18nInstance.init({
@@ -50,7 +57,15 @@ const app = async () => {
       formState: 'idle', // 'sending' 'sent' 'failed'
     },
     addedLinks: [],
-    errorMessage: '',
+    feeds: [],
+    posts: [],
+    loadingProcess: {
+      loadState: 'idle',
+    },
+    ui: {
+      seenPosts: [],
+    },
+    error: '',
     feedback: {
       success: i18nInstance.t('feedback.success'),
       invalidRss: i18nInstance.t('feedback.invalidRss'),
@@ -59,7 +74,6 @@ const app = async () => {
       networkError: i18nInstance.t('feedback.networkError'),
     },
   };
-  console.log(state); // +
 
   const watchedState = onChange(state, () => {
     render(watchedState, elements);
@@ -70,27 +84,16 @@ const app = async () => {
     watchedState.formState = 'sending';
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    console.log(url);
     validateURL(url, watchedState.addedLinks, i18nInstance)
-      .then((data) => {
-        console.log('valid');
-        watchedState.form.isValid = true;
-        watchedState.errorMessage = '';
-        // const validUrl = { id: _.uniqueId(), url };
-        watchedState.addedLinks.push(data);
-      })
-      .catch((err) => {
-        console.log('invalid');
-        watchedState.form.isValid = false;
-        console.log(err.message);
-        watchedState.errorMessage = err.message;
+      .then((link) => getRssData(link))
+      .then((response) => {
+        console.log(response);
+        const data = response.data.contents;
+        return parse(data);
       });
-    watchedState.form.isValid = null;
-    console.log(watchedState);
+    // watchedState.addedLinks.push({ id: uniqueId(), link });
+    // .then(({ feed, posts }) => {});
   });
-
-  // сюда аксиос с гет (юрл)
-  console.log(watchedState);
 };
 
 export default app;

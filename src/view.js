@@ -14,8 +14,8 @@ const render = (watchedState, elements) => {
     input.classList.add('is-invalid');
     feedback.classList.remove('text-success');
     feedback.classList.add('text-danger');
-    console.log(watchedState.errorMessage);
-    feedback.textContent = watchedState.errorMessage;
+    console.log(watchedState.error);
+    feedback.textContent = watchedState.error;
   }
 };
 
