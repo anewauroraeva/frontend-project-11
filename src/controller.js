@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 import i18n from 'i18next';
 import * as yup from 'yup';
-// import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash';
 import axios from 'axios';
 import parse from './parser.js';
 import render from './view.js';
@@ -25,6 +25,7 @@ const validateURL = async (url, addedLinks, i18nInstance) => {
   try {
     return schema.validate(url);
   } catch (error) {
+    console.log(error);
     return error.message;
   }
 };
@@ -34,6 +35,36 @@ const getRssData = (link) => {
   return axios.get(allOrigins, { timeout: 10000 });
 };
 // console.log(getRssData('https://lorem-rss.hexlet.app/feed'));
+
+const assembleFeed = (feed) => { // works
+  const { feedTitle, feedDescription } = feed;
+  const fullFeed = {
+    id: Number(uniqueId()),
+    title: feedTitle,
+    description: feedDescription,
+  };
+  return fullFeed;
+};
+// console.log(assembleFeed({ feedTitle: 'pipupu', feedDescription: 'pupipu' }));
+
+const assemblePosts = (parcedPosts) => { // works
+  const posts = parcedPosts.map((post) => {
+    // const id = Number(uniqueId());
+    const { title, description, link } = post;
+    return {
+      id: Number(uniqueId()),
+      title,
+      description,
+      link,
+    };
+  });
+  return posts;
+};
+/* const checkPosts = [
+  { title: 'lorum', description: 'ipsum', link: 'http://example.com/test/1706110440' },
+  { title: 'hahaha', description: 'hihihi', link: 'http://example.com/test/1706110440' },
+];
+console.log(assemblePosts(checkPosts)); */
 
 const app = async () => {
   const elements = {
@@ -53,16 +84,18 @@ const app = async () => {
 
   const state = {
     form: {
-      isValid: null,
-      formState: 'idle', // 'sending' 'sent' 'failed'
+      isValid: false,
+      formState: 'idle', // 'sending' 'invalidUrl' 'duplicate' 'sent' 'failed'
     },
     addedLinks: [],
     feeds: [],
     posts: [],
     loadingProcess: {
-      loadState: 'idle',
+      loadState: 'idle', // loading, success, invalidRss, networkError
     },
     ui: {
+      inputDisabled: false,
+      submitDisabled: false,
       seenPosts: [],
     },
     error: '',
@@ -81,18 +114,44 @@ const app = async () => {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    watchedState.formState = 'sending';
+    watchedState.form.formState = 'sending';
     const formData = new FormData(e.target);
     const url = formData.get('url');
     validateURL(url, watchedState.addedLinks, i18nInstance)
-      .then((link) => getRssData(link))
+      .then((link) => {
+        const addedLink = { id: Number(uniqueId()), link };
+        watchedState.addedLinks.push(addedLink);
+        return getRssData(link);
+      }) /* {
+        watchedState.loadingProcess.loadState = 'loading';
+        watchedState.addedLinks.push(url);
+        getRssData(link);
+      }) */
       .then((response) => {
-        console.log(response);
+        // console.log(response);
+        // watchedState.addedLinks.push(url);
         const data = response.data.contents;
+        console.log(parse(data));
         return parse(data);
+      })
+      .then(({ feed, posts }) => {
+        // feed.id = 'id from link';
+        const newFeed = assembleFeed(feed);
+        watchedState.feeds.push(newFeed);
+        // posts.id = 'id from link';
+        const newPosts = assemblePosts(posts);
+        console.log(newPosts);
+        watchedState.posts.push(newPosts);
+        console.log(watchedState);
+        watchedState.loadingProcess.loadState = 'success';
+      })
+      .catch(() => {
+        watchedState.loadingProcess.loadState = 'invalidRss';
+        console.log(watchedState);
+        return watchedState.feedback.networkError;
       });
-    // watchedState.addedLinks.push({ id: uniqueId(), link });
-    // .then(({ feed, posts }) => {});
+    // watchedState.addedLinks.push({ id: uniqueId(), url });
+    console.log(watchedState.addedLinks);
   });
 };
 

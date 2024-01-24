@@ -1,13 +1,13 @@
 const parse = (data) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(data, 'text/xml');
-  console.log(doc);
+  // console.log(doc);
 
   const errorNode = doc.querySelector('parsererror');
   if (errorNode) {
-    console.log(errorNode);
+    /* console.log(errorNode);
     const div = document.querySelector('.posts');
-    div.append(errorNode);
+    div.append(errorNode); */
     throw new Error('invalidRss');
   } else {
     const channel = doc.querySelector('channel');
@@ -27,6 +27,7 @@ const parse = (data) => {
 
       return { title, description, link };
     });
+    console.log(posts);
     return { feed, posts };
   }
 };
