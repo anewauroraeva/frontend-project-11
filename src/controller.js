@@ -32,11 +32,11 @@ const validateURL = async (url, addedLinks, i18nInstance) => {
 
 const getRssData = (link) => {
   const allOrigins = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(link)}`;
-  return axios.get(allOrigins, { timeout: 10000 });
+  return axios.get(allOrigins); // , { timeout: 10000 });
 };
 // console.log(getRssData('https://lorem-rss.hexlet.app/feed'));
 
-const assembleFeed = (feed) => { // works
+const normalizeFeed = (feed) => { // works
   const { feedTitle, feedDescription } = feed;
   const fullFeed = {
     id: Number(uniqueId()),
@@ -47,7 +47,7 @@ const assembleFeed = (feed) => { // works
 };
 // console.log(assembleFeed({ feedTitle: 'pipupu', feedDescription: 'pupipu' }));
 
-const assemblePosts = (parcedPosts) => { // works
+const normalizePosts = (parcedPosts) => { // works
   const posts = parcedPosts.map((post) => {
     // const id = Number(uniqueId());
     const { title, description, link } = post;
@@ -100,11 +100,11 @@ const app = async () => {
     },
     error: '',
     feedback: {
-      success: i18nInstance.t('feedback.success'),
-      invalidRss: i18nInstance.t('feedback.invalidRss'),
-      invalidUrl: i18nInstance.t('feedback.invalidUrl'),
-      duplicate: i18nInstance.t('feedback.duplicate'),
-      networkError: i18nInstance.t('feedback.networkError'),
+      success: i18nInstance.t('feedback.success'), // https://lorem-rss.hexlet.app/feed
+      invalidRss: i18nInstance.t('feedback.invalidRss'), // https://news.yandex.ru/daily.rss
+      invalidUrl: i18nInstance.t('feedback.invalidUrl'), // 123
+      duplicate: i18nInstance.t('feedback.duplicate'), // https://lorem-rss.hexlet.app/feed
+      networkError: i18nInstance.t('feedback.networkError'), // offline
     },
   };
 
@@ -118,40 +118,33 @@ const app = async () => {
     const formData = new FormData(e.target);
     const url = formData.get('url');
     validateURL(url, watchedState.addedLinks, i18nInstance)
-      .then((link) => {
-        const addedLink = { id: Number(uniqueId()), link };
-        watchedState.addedLinks.push(addedLink);
-        return getRssData(link);
-      }) /* {
-        watchedState.loadingProcess.loadState = 'loading';
-        watchedState.addedLinks.push(url);
-        getRssData(link);
-      }) */
-      .then((response) => {
-        // console.log(response);
-        // watchedState.addedLinks.push(url);
-        const data = response.data.contents;
-        console.log(parse(data));
-        return parse(data);
+      .then((validUrl) => getRssData(validUrl))
+      .then((response) => parse(response.data.contents))
+      .then((parsedData) => {
+        const feed = normalizeFeed(parsedData.feed);
+        watchedState.feeds.unshift(feed);
+        const posts = normalizePosts(parsedData.posts);
+        watchedState.posts.push(posts);
       })
-      .then(({ feed, posts }) => {
-        // feed.id = 'id from link';
-        const newFeed = assembleFeed(feed);
-        watchedState.feeds.push(newFeed);
-        // posts.id = 'id from link';
-        const newPosts = assemblePosts(posts);
-        console.log(newPosts);
-        watchedState.posts.push(newPosts);
-        console.log(watchedState);
-        watchedState.loadingProcess.loadState = 'success';
+      .then(() => {
+        watchedState.form.isValid = true;
+        watchedState.addedLinks.push({ id: uniqueId(), url });
+        watchedState.form.formState = 'sent';
+        watchedState.loadingProcess = 'loaded';
       })
-      .catch(() => {
-        watchedState.loadingProcess.loadState = 'invalidRss';
-        console.log(watchedState);
-        return watchedState.feedback.networkError;
+      .catch((error) => {
+        const { message } = error;
+        watchedState.form.isValid = false;
+        if (message === 'Network Error') {
+          watchedState.error = i18nInstance.t('feedback.networkError');
+        } else if (message === 'invalidRss') {
+          watchedState.error = i18nInstance.t('feedback.invalidRss');
+        } else {
+          watchedState.error = error.message;
+        }
+        watchedState.form.isValid = false;
       });
-    // watchedState.addedLinks.push({ id: uniqueId(), url });
-    console.log(watchedState.addedLinks);
+    console.log(watchedState);
   });
 };
 

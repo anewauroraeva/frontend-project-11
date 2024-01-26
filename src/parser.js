@@ -27,7 +27,7 @@ const parse = (data) => {
 
       return { title, description, link };
     });
-    console.log(posts);
+
     return { feed, posts };
   }
 };
