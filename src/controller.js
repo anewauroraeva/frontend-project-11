@@ -7,7 +7,7 @@ import parse from './parser.js';
 import render from './view.js';
 import ru from './locales/index.js';
 
-const validateURL = async (url, addedLinks, i18nInstance) => {
+const validateURL = (url, addedLinks, i18nInstance) => {
   yup.setLocale({
     mixed: {
       notOneOf: i18nInstance.t('feedback.duplicate'),
@@ -21,13 +21,15 @@ const validateURL = async (url, addedLinks, i18nInstance) => {
     .trim()
     .required()
     .url(i18nInstance.t('feedback.invalidUrl'))
-    .notOneOf(addedLinks, i18nInstance.t('feedback.duplicate'));
-  try {
+    .notOneOf(addedLinks, i18nInstance.t('feedback.duplicate'))
+    .validate(url);
+  /* try {
     return schema.validate(url);
   } catch (error) {
     console.log(error);
     return error.message;
-  }
+  } */
+  return schema;
 };
 
 const getRssData = (link) => {
@@ -85,14 +87,11 @@ const app = async () => {
   const state = {
     form: {
       isValid: false,
-      formState: 'idle', // 'sending' 'invalidUrl' 'duplicate' 'sent' 'failed'
+      formState: 'idle', // 'sending' 'sent' 'failed'
     },
     addedLinks: [],
     feeds: [],
     posts: [],
-    loadingProcess: {
-      loadState: 'idle', // loading, success, invalidRss, networkError
-    },
     ui: {
       inputDisabled: false,
       submitDisabled: false,
@@ -108,33 +107,43 @@ const app = async () => {
     },
   };
 
+  // const watchedState = onChange(state, render(elements, watchedState));
   const watchedState = onChange(state, () => {
     render(watchedState, elements);
   });
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log(watchedState.form.formState);
     watchedState.form.formState = 'sending';
+    console.log(watchedState.form.formState);
     const formData = new FormData(e.target);
     const url = formData.get('url');
     validateURL(url, watchedState.addedLinks, i18nInstance)
       .then((validUrl) => getRssData(validUrl))
       .then((response) => parse(response.data.contents))
       .then((parsedData) => {
+        console.log('parsed');
         const feed = normalizeFeed(parsedData.feed);
         watchedState.feeds.unshift(feed);
         const posts = normalizePosts(parsedData.posts);
         watchedState.posts.push(posts);
       })
       .then(() => {
+        watchedState.form.formState = 'sent';
+        console.log(watchedState.form.formState);
         watchedState.form.isValid = true;
         watchedState.addedLinks.push({ id: uniqueId(), url });
-        watchedState.form.formState = 'sent';
-        watchedState.loadingProcess = 'loaded';
+        /* watchedState.form.formState = 'idle';
+        watchedState.form.isValid = false; */
+        console.log(watchedState.form.formState);
       })
       .catch((error) => {
         const { message } = error;
-        watchedState.form.isValid = false;
+        // watchedState.form.isValid = false;
+        // watchedState.form.formState = 'failed';
+        // console.log(watchedState.form.error);
+        console.log(message);
         if (message === 'Network Error') {
           watchedState.error = i18nInstance.t('feedback.networkError');
         } else if (message === 'invalidRss') {
@@ -142,10 +151,18 @@ const app = async () => {
         } else {
           watchedState.error = error.message;
         }
+        // console.log(watchedState.form.formState);
         watchedState.form.isValid = false;
+        // console.log(watchedState.form.formState);
       });
-    console.log(watchedState);
+    /* watchedState.form.formState = 'idle';
+    watchedState.form.isValid = false;
+    console.log(watchedState.form.formState); */
+    // console.log(watchedState);
   });
+  // watchedState.form.formState = 'idle';
+  // watchedState.form.isValid = false;
+  console.log(watchedState);
 };
 
 export default app;
