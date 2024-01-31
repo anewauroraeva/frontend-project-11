@@ -18,6 +18,11 @@ export default {
       invalidRss: 'Ресурс не содержит валидный RSS',
       duplicate: 'RSS уже существует',
       networkError: 'Ошибка сети',
+      required: 'Заполните это поле',
+    },
+    content: {
+      posts: 'Посты',
+      feeds: 'Фиды',
     },
   },
 };
