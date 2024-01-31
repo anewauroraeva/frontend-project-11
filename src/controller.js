@@ -19,16 +19,10 @@ const validateURL = (url, addedLinks, i18nInstance) => {
 
   const schema = yup.string()
     .trim()
-    .required()
+    .required(i18nInstance.t('feedback.required'))
     .url(i18nInstance.t('feedback.invalidUrl'))
     .notOneOf(addedLinks, i18nInstance.t('feedback.duplicate'))
     .validate(url);
-  /* try {
-    return schema.validate(url);
-  } catch (error) {
-    console.log(error);
-    return error.message;
-  } */
   return schema;
 };
 
@@ -47,14 +41,15 @@ const normalizeFeed = (feed) => { // works
   };
   return fullFeed;
 };
-// console.log(assembleFeed({ feedTitle: 'pipupu', feedDescription: 'pupipu' }));
+// console.log(normalizeFeed({ feedTitle: 'pipupu', feedDescription: 'pupipu' }));
 
 const normalizePosts = (parcedPosts) => { // works
   const posts = parcedPosts.map((post) => {
-    // const id = Number(uniqueId());
+    const id = Number(uniqueId());
     const { title, description, link } = post;
     return {
-      id: Number(uniqueId()),
+      // id: Number(uniqueId()),
+      id,
       title,
       description,
       link,
@@ -66,9 +61,9 @@ const normalizePosts = (parcedPosts) => { // works
   { title: 'lorum', description: 'ipsum', link: 'http://example.com/test/1706110440' },
   { title: 'hahaha', description: 'hihihi', link: 'http://example.com/test/1706110440' },
 ];
-console.log(assemblePosts(checkPosts)); */
+console.log(normalizePosts(checkPosts)); */
 
-const app = async () => {
+const app = () => {
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('#url-input'),
@@ -78,7 +73,7 @@ const app = async () => {
   const { form } = elements;
 
   const i18nInstance = i18n.createInstance();
-  await i18nInstance.init({
+  i18nInstance.init({
     lng: 'ru',
     debug: false,
     resources: { ru },
@@ -92,11 +87,6 @@ const app = async () => {
     addedLinks: [],
     feeds: [],
     posts: [],
-    ui: {
-      inputDisabled: false,
-      submitDisabled: false,
-      seenPosts: [],
-    },
     error: '',
     feedback: {
       success: i18nInstance.t('feedback.success'), // https://lorem-rss.hexlet.app/feed
@@ -109,34 +99,43 @@ const app = async () => {
 
   // const watchedState = onChange(state, render(elements, watchedState));
   const watchedState = onChange(state, () => {
-    render(watchedState, elements);
+    render(elements, state);
   });
+
+  console.log(watchedState);
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    console.log(watchedState.form.formState);
-    watchedState.form.formState = 'sending';
-    console.log(watchedState.form.formState);
+    // console.log(watchedState.form.formState);
+    watchedState.error = '';
+    watchedState.form.formState = 'sending'; // watchedState changes
+    // console.log(watchedState.form.formState);
+    // watchedState.ui.inputDisabled = true;
+    // watchedState.ui.submitDisabled = true;
     const formData = new FormData(e.target);
     const url = formData.get('url');
+    console.log(watchedState);
     validateURL(url, watchedState.addedLinks, i18nInstance)
       .then((validUrl) => getRssData(validUrl))
       .then((response) => parse(response.data.contents))
       .then((parsedData) => {
-        console.log('parsed');
+        // console.log(parsedData);
         const feed = normalizeFeed(parsedData.feed);
-        watchedState.feeds.unshift(feed);
+        watchedState.feeds.unshift(feed); // watchedState changes
         const posts = normalizePosts(parsedData.posts);
-        watchedState.posts.push(posts);
+        watchedState.posts.push(posts); // watchedState changes
+        console.log(watchedState);
       })
       .then(() => {
-        watchedState.form.formState = 'sent';
-        console.log(watchedState.form.formState);
-        watchedState.form.isValid = true;
-        watchedState.addedLinks.push({ id: uniqueId(), url });
+        // watchedState.error = '';
+        watchedState.form.isValid = true; // watchedState changes
+        watchedState.addedLinks.push(url); // watchedState changes
+        watchedState.form.formState = 'sent'; // watchedState changes
+        // console.log(watchedState.form.formState);
         /* watchedState.form.formState = 'idle';
         watchedState.form.isValid = false; */
-        console.log(watchedState.form.formState);
+        console.log('success');
+        console.log(watchedState);
       })
       .catch((error) => {
         const { message } = error;
@@ -144,25 +143,35 @@ const app = async () => {
         // watchedState.form.formState = 'failed';
         // console.log(watchedState.form.error);
         console.log(message);
-        if (message === 'Network Error') {
-          watchedState.error = i18nInstance.t('feedback.networkError');
-        } else if (message === 'invalidRss') {
-          watchedState.error = i18nInstance.t('feedback.invalidRss');
-        } else {
-          watchedState.error = error.message;
+        switch (message) {
+          case 'Network Error':
+            watchedState.error = i18nInstance.t('feedback.networkError');
+            break;
+          case 'invalidRss':
+            watchedState.error = i18nInstance.t('feedback.invalidRss');
+            break;
+          default:
+            watchedState.error = error.message;
+            break;
         }
-        // console.log(watchedState.form.formState);
-        watchedState.form.isValid = false;
-        // console.log(watchedState.form.formState);
+        /* if (message === 'Network Error') {
+          watchedState.error = i18nInstance.t('feedback.networkError'); // watchedState changes
+        } else if (message === 'invalidRss') {
+          watchedState.error = i18nInstance.t('feedback.invalidRss'); // watchedState changes
+        } else {
+          watchedState.error = error.message; // watchedState changes
+        } */
+        watchedState.form.isValid = false; // watchedState changes
       });
     /* watchedState.form.formState = 'idle';
     watchedState.form.isValid = false;
     console.log(watchedState.form.formState); */
-    // console.log(watchedState);
+    console.log(watchedState);
+    watchedState.form.formState = 'idle';
   });
   // watchedState.form.formState = 'idle';
   // watchedState.form.isValid = false;
-  console.log(watchedState);
+  // console.log(watchedState);
 };
 
 export default app;

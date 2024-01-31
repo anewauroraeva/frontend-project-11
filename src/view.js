@@ -12,14 +12,17 @@ headerContainer.classList.add('card-body');
 cardContainer.append(headerContainer);
 const header = document.createElement('h2');
 header.classList.add('card-title', 'h4');
+header.textContent = 'instance';
 headerContainer.append(header); // outside
 
 const postsList = document.createElement('ul');
 postsList.classList.add('list-group', 'border-0', 'rounded-0');
 cardContainer.append(postsList);
 
-const render = (watchedState, elements) => {
-  const { form, input, feedback } = elements;
+const render = (elements, watchedState) => {
+  const {
+    form, input, /* submit,  */feedback,
+  } = elements;
   if (watchedState.form.isValid) {
     input.classList.remove('is-invalid');
     feedback.textContent = '';
@@ -35,10 +38,9 @@ const render = (watchedState, elements) => {
     // console.log(watchedState.error);
     feedback.textContent = watchedState.error;
   }
-  /* if (watchedState.form.formState === 'sending') {
-    const { inputDisabled, submitDisabled } = watchedState.ui;
-    // submitDisabled = false;
-  } */
+  if (watchedState.form.formState === 'sending') {
+    input.classList.remove('is-invalid');
+  }
 
   if (watchedState.form.formState === 'sent') {
     const allPosts = watchedState.posts; // rename???
@@ -51,7 +53,7 @@ const render = (watchedState, elements) => {
         // console.log(title);
         const postEl = document.createElement('li');
         postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-        // postEl.textContent = title;
+
         const postLink = document.createElement('a');
         postLink.setAttribute('href', link);
         postLink.classList.add('fw-bold');
@@ -61,7 +63,7 @@ const render = (watchedState, elements) => {
         postLink.textContent = title;
 
         postEl.append(postLink);
-        console.log('after postEl');
+        // console.log('after postEl');
 
         const watchBtn = document.createElement('button');
         watchBtn.setAttribute('type', 'button');
@@ -73,15 +75,16 @@ const render = (watchedState, elements) => {
         postEl.append(watchBtn);
 
         postsList.append(postEl);
-        console.log('after prepend to postsList');
+        // console.log('after prepend to postsList');
       });
       // allPosts.prepend(cardContainer);
+      // postsList.append()
     });
     // allPosts.prepend(cardContainer);
     /* const { feeds } = watchedState;
     const feedContainer = document.querySelector('div.feeds'); */
   }
-  console.log(watchedState);
+  // console.log(watchedState);
 };
 
 export default render;
