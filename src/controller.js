@@ -26,9 +26,10 @@ const validateURL = (url, addedLinks, i18nInstance) => {
   return schema;
 };
 
+// const timeout = 5000;
 const getRssData = (link) => {
   const allOrigins = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(link)}`;
-  return axios.get(allOrigins); // , { timeout: 10000 });
+  return axios.get(allOrigins); // , { timeout });
 };
 // console.log(getRssData('https://lorem-rss.hexlet.app/feed'));
 
@@ -63,6 +64,11 @@ const normalizePosts = (parcedPosts) => { // works
 ];
 console.log(normalizePosts(checkPosts)); */
 
+/* const updateFeeds = () => {
+  // setTimeout()
+  // change watchedState
+}; */
+
 const app = () => {
   const elements = {
     form: document.querySelector('.rss-form'),
@@ -88,6 +94,10 @@ const app = () => {
     feeds: [],
     posts: [],
     error: '',
+    ui: {
+      inputReadOnly: false,
+      submitDisabled: false,
+    },
     feedback: {
       success: i18nInstance.t('feedback.success'), // https://lorem-rss.hexlet.app/feed
       invalidRss: i18nInstance.t('feedback.invalidRss'), // https://news.yandex.ru/daily.rss
@@ -99,22 +109,22 @@ const app = () => {
 
   // const watchedState = onChange(state, render(elements, watchedState));
   const watchedState = onChange(state, () => {
-    render(elements, state);
+    render(state, elements, i18nInstance);
   });
 
-  console.log(watchedState);
+  // console.log(watchedState);
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     // console.log(watchedState.form.formState);
     watchedState.error = '';
     watchedState.form.formState = 'sending'; // watchedState changes
-    // console.log(watchedState.form.formState);
-    // watchedState.ui.inputDisabled = true;
-    // watchedState.ui.submitDisabled = true;
+    // console.log('must be sending', watchedState.form.formState);
+    watchedState.ui.inputReadOnly = true;
+    watchedState.ui.submitDisabled = true;
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    console.log(watchedState);
+    // console.log(watchedState);
     validateURL(url, watchedState.addedLinks, i18nInstance)
       .then((validUrl) => getRssData(validUrl))
       .then((response) => parse(response.data.contents))
@@ -124,25 +134,29 @@ const app = () => {
         watchedState.feeds.unshift(feed); // watchedState changes
         const posts = normalizePosts(parsedData.posts);
         watchedState.posts.push(posts); // watchedState changes
-        console.log(watchedState);
+        // console.log(watchedState);
       })
       .then(() => {
         // watchedState.error = '';
         watchedState.form.isValid = true; // watchedState changes
         watchedState.addedLinks.push(url); // watchedState changes
+        watchedState.ui.inputReadOnly = false;
+        watchedState.ui.submitDisabled = false;
         watchedState.form.formState = 'sent'; // watchedState changes
         // console.log(watchedState.form.formState);
         /* watchedState.form.formState = 'idle';
         watchedState.form.isValid = false; */
-        console.log('success');
-        console.log(watchedState);
+        // console.log('success');
+        // console.log(watchedState);
       })
       .catch((error) => {
         const { message } = error;
         // watchedState.form.isValid = false;
-        // watchedState.form.formState = 'failed';
+        watchedState.form.formState = 'failed';
+        watchedState.ui.inputReadOnly = false;
+        watchedState.ui.submitDisabled = false;
         // console.log(watchedState.form.error);
-        console.log(message);
+        // console.log(message);
         switch (message) {
           case 'Network Error':
             watchedState.error = i18nInstance.t('feedback.networkError');
@@ -162,6 +176,8 @@ const app = () => {
           watchedState.error = error.message; // watchedState changes
         } */
         watchedState.form.isValid = false; // watchedState changes
+        watchedState.ui.inputReadOnly = false;
+        watchedState.ui.submitDisabled = false;
       });
     /* watchedState.form.formState = 'idle';
     watchedState.form.isValid = false;

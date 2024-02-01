@@ -20,7 +20,7 @@ export default {
       networkError: 'Ошибка сети',
       required: 'Заполните это поле',
     },
-    content: {
+    items: {
       posts: 'Посты',
       feeds: 'Фиды',
     },
