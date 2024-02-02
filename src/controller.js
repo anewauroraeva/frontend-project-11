@@ -95,7 +95,6 @@ const app = () => {
     posts: [],
     error: '',
     ui: {
-      inputReadOnly: false,
       submitDisabled: false,
     },
     feedback: {
@@ -116,31 +115,25 @@ const app = () => {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    // console.log(watchedState.form.formState);
     watchedState.error = '';
-    watchedState.form.formState = 'sending'; // watchedState changes
-    // console.log('must be sending', watchedState.form.formState);
-    watchedState.ui.inputReadOnly = true;
+    watchedState.form.formState = 'sending';
     watchedState.ui.submitDisabled = true;
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    // console.log(watchedState);
     validateURL(url, watchedState.addedLinks, i18nInstance)
       .then((validUrl) => getRssData(validUrl))
       .then((response) => parse(response.data.contents))
       .then((parsedData) => {
-        // console.log(parsedData);
         const feed = normalizeFeed(parsedData.feed);
-        watchedState.feeds.unshift(feed); // watchedState changes
+        watchedState.feeds.unshift(feed);
         const posts = normalizePosts(parsedData.posts);
-        watchedState.posts.push(posts); // watchedState changes
-        // console.log(watchedState);
+        console.log(watchedState.posts, posts);
+        const allPosts = watchedState.posts.concat(posts);
+        watchedState.posts = allPosts;
       })
       .then(() => {
-        // watchedState.error = '';
         watchedState.form.isValid = true; // watchedState changes
         watchedState.addedLinks.push(url); // watchedState changes
-        watchedState.ui.inputReadOnly = false;
         watchedState.ui.submitDisabled = false;
         watchedState.form.formState = 'sent'; // watchedState changes
         // console.log(watchedState.form.formState);
@@ -153,7 +146,6 @@ const app = () => {
         const { message } = error;
         // watchedState.form.isValid = false;
         watchedState.form.formState = 'failed';
-        watchedState.ui.inputReadOnly = false;
         watchedState.ui.submitDisabled = false;
         // console.log(watchedState.form.error);
         // console.log(message);
@@ -176,7 +168,6 @@ const app = () => {
           watchedState.error = error.message; // watchedState changes
         } */
         watchedState.form.isValid = false; // watchedState changes
-        watchedState.ui.inputReadOnly = false;
         watchedState.ui.submitDisabled = false;
       });
     /* watchedState.form.formState = 'idle';

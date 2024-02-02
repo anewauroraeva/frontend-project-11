@@ -1,22 +1,71 @@
 // import i18next from 'i18next';
 
-const createContainer = (i18nInstance, item) => {
-  const itemContainer = document.querySelector(`div.${item}`);
+const createContainer = (i18nInstance, item, watchedState) => {
+  const itemsContainer = document.querySelector(`div.${item}`);
 
   const cardContainer = document.createElement('div');
   cardContainer.classList.add('card', 'border-0');
-  // postsContainer.append(cardContainer);
+  itemsContainer.append(cardContainer);
 
-  const headerContainer = document.createElement('div');
-  headerContainer.classList.add('card-body');
-  // cardContainer.append(headerContainer);
-  const header = document.createElement('h2');
-  header.classList.add('card-title', 'h4');
-  header.textContent = i18nInstance.t(`items[${item}]`);
-  // headerContainer.append(header);
+  const titleCardContainer = document.createElement('div');
+  titleCardContainer.classList.add('card-body');
+  cardContainer.append(titleCardContainer);
+
+  const titleContainer = document.createElement('h2');
+  titleContainer.classList.add('card-title', 'h4');
+  titleContainer.textContent = i18nInstance.t(`items.${item}`);
+  titleCardContainer.append(titleContainer);
+
   const itemList = document.createElement('ul');
   itemList.classList.add('list-group', 'border-0', 'rounded-0');
   cardContainer.append(itemList);
+
+  if (item === 'feeds') {
+    console.log('feeds');
+    watchedState.feeds.forEach((feed) => {
+      const feedElement = document.createElement('li');
+      feedElement.classList.add('list-group-item', 'border-0', 'border-end-0');
+
+      const feedTitle = document.createElement('h3');
+      feedTitle.classList.add('h6', 'm-0');
+      feedTitle.textContent = feed.title;
+
+      const feedDescription = document.createElement('p');
+      feedDescription.classList.add('m-0', 'small', 'text-black-50');
+      feedDescription.textContent = feed.description;
+
+      feedElement.append(feedTitle, feedDescription);
+      itemList.append(feedElement);
+    });
+  }
+
+  if (item === 'posts') {
+    // forEach???
+    watchedState.posts.forEach((post) => {
+      console.log('forEach posts');
+      const postElement = document.createElement('li');
+      postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+
+      const postLinkedTitle = document.createElement('a');
+      postLinkedTitle.classList.add('fw-bold');
+      postLinkedTitle.setAttribute('href', post.link);
+      postLinkedTitle.dataset.id = post.id;
+      postLinkedTitle.setAttribute('target', '_blank');
+      postLinkedTitle.setAttribute('rel', 'noopener noreferrer');
+      postLinkedTitle.textContent = post.title;
+
+      const watchBtn = document.createElement('button');
+      watchBtn.setAttribute('type', 'button');
+      watchBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      watchBtn.dataset.id = post.id;
+      watchBtn.dataset.bsToggle = 'modal';
+      watchBtn.dataset.bsTarget = '#modal';
+      watchBtn.textContent = i18nInstance.t('view');
+      console.log(itemList);
+      postElement.append(postLinkedTitle, watchBtn);
+      itemList.append(postElement);
+    });
+  }
 };
 
 const handleError = (elements, watchedState) => {
@@ -47,77 +96,45 @@ const handleSuccess = (elements, watchedState) => {
 
 const render = (watchedState, elements, i18nInstance) => {
   const {
-    form, input, submit, feedback,
+    input, submit, feedback,
   } = elements;
-  const { feeds, posts } = watchedState;
 
   switch (watchedState.form.formState) {
     case 'idle': {
+      console.log('idle');
       feedback.textContent = '';
       feedback.classList.remove('text-success');
       feedback.classList.add('text-danger');
       input.classList.remove('is-invalid');
-      input.removeAttribute('readonly');
       submit.removeAttribute('submit');
       break;
     }
     case 'sending': {
-      input.setAttribute('readonly', watchedState.ui.inputReadOnly);
+      console.log('sending');
       submit.disabled = watchedState.ui.submitDisabled;
       break;
     }
     case 'sent': {
+      console.log('sent');
       handleSuccess(elements, watchedState);
+      createContainer(i18nInstance, 'feeds', watchedState);
+      createContainer(i18nInstance, 'posts', watchedState);
+      /* if (path === 'feeds') {
+        createContainer(i18nInstance, 'feeds', watchedState);
+      }
+      if (path === 'posts') {
+        createContainer(i18nInstance, 'posts', watchedState);
+      } */
       break;
     }
     case 'failed': {
+      console.log('fail');
       handleError(elements, watchedState);
       break;
     }
     default:
       break;
   }
-  /* allPosts.forEach((posts) => {
-      posts.forEach((post) => {
-        const {
-          description, id, title, link,
-        } = post;
-        // console.log(title);
-        const postEl = document.createElement('li');
-        postEl.classList.add('list-group-item', 'd-flex',
-        'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-
-        const postLink = document.createElement('a');
-        postLink.setAttribute('href', link);
-        postLink.classList.add('fw-bold');
-        postLink.dataset.id = id;
-        postLink.setAttribute('target', '_blank');
-        postLink.setAttribute('rel', 'noopener', 'noreferrer');
-        postLink.textContent = title;
-
-        // postEl.append(postLink);
-        // console.log('after postEl');
-
-        const watchBtn = document.createElement('button');
-        watchBtn.setAttribute('type', 'button');
-        watchBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-        watchBtn.dataset.id = id;
-        watchBtn.dataset.bsToggle = 'modal';
-        watchBtn.dataset.bsTarget = '#modal';
-        watchBtn.textContent = 'Просмотр';
-        postEl.append(watchBtn);
-
-        // postsList.append(postEl);
-        // console.log('after prepend to postsList');
-      });
-      // allPosts.prepend(cardContainer);
-      // postsList.append()
-    }); */
-  // allPosts.prepend(cardContainer);
-  /* const { feeds } = watchedState;
-    const feedContainer = document.querySelector('div.feeds'); */
-  // }
-  // console.log(watchedState);
 };
 
 export default render;
