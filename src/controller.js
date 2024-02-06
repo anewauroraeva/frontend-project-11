@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 import i18n from 'i18next';
 import * as yup from 'yup';
-import { uniqueId } from 'lodash';
+import _ from 'lodash';
 import axios from 'axios';
 import parse from './parser.js';
 import render from './view.js';
@@ -36,7 +36,7 @@ const getRssData = (link) => {
 const normalizeFeed = (feed) => { // works
   const { feedTitle, feedDescription } = feed;
   const fullFeed = {
-    id: Number(uniqueId()),
+    id: Number(_.uniqueId()),
     title: feedTitle,
     description: feedDescription,
   };
@@ -46,7 +46,7 @@ const normalizeFeed = (feed) => { // works
 
 const normalizePosts = (parcedPosts) => { // works
   const posts = parcedPosts.map((post) => {
-    const id = Number(uniqueId());
+    const id = Number(_.uniqueId());
     const { title, description, link } = post;
     return {
       // id: Number(uniqueId()),
@@ -67,6 +67,69 @@ console.log(normalizePosts(checkPosts)); */
 /* const updateFeeds = () => {
   // setTimeout()
   // change watchedState
+}; */
+
+const updatePosts = (state) => {
+  const stateCopy = _.cloneDeep(state);
+  const { feeds } = stateCopy;
+  const currentPosts = stateCopy;
+  const feedsPros = feeds.map(({ link }) => {
+    getRssData(link)
+      .then((resp) => {
+        parse(resp.data.contents);
+        console.log(parse(resp.data.contents));
+      })
+      .then((parsedData) => normalizePosts(parsedData.posts))
+      .catch((error) => {
+        stateCopy.error = error.message;
+      }) // to stateCopy.error
+      .then((posts) => {
+        // const newPosts =
+        console.log(posts);
+
+        const currentPostsLinks = currentPosts.map((currPost) => currPost.link);
+        const newPostsLinks = newPosts.map((newPost) => newPost.link);
+
+        const reallyNewPosts = newPostsLinks.filter((nPLink) => !currentPostsLinks.includes(nPLink));
+        return reallyNewPosts;
+      })
+      .then((nPosts) => state.posts.unshift(nPosts))
+      .catch((e) => {
+        stateCopy.error = e.message;
+      });
+  });
+};
+const checkState = {
+  form: {
+    isValid: false,
+    formState: 'idle', // 'sending' 'sent' 'failed'
+  },
+  addedLinks: [],
+  feeds: [],
+  posts: [],
+  error: '',
+  ui: {
+    submitDisabled: false,
+  },
+};
+console.log(updatePosts(checkState));
+/* const updatePosts = (state) => {
+  const stateCopy = _.cloneDeep(state); // or { ...state }???
+  const { feeds } = stateCopy;
+  const currentPosts = stateCopy.posts;
+  const newPosts = '';
+  // get feeds posts links
+  const getCurrentPostsLinks = currentPosts.map(({ link }) => {
+    console.log(link);
+  });
+
+  const trackNewPosts = (links) => {
+    links.forEach((link) => {
+      getRssData(link)
+        .then((response) => parse(response.data.contents))
+        .then((parsedData) => console.log(parsedData));
+    });
+  };
 }; */
 
 const app = () => {
@@ -115,6 +178,7 @@ const app = () => {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log(updatePosts(watchedState));
     watchedState.error = '';
     watchedState.form.formState = 'sending';
     watchedState.ui.submitDisabled = true;
@@ -124,12 +188,13 @@ const app = () => {
       .then((validUrl) => getRssData(validUrl))
       .then((response) => parse(response.data.contents))
       .then((parsedData) => {
+        console.log(parsedData);
         const feed = normalizeFeed(parsedData.feed);
         watchedState.feeds.unshift(feed);
         const posts = normalizePosts(parsedData.posts);
-        console.log(watchedState.posts, posts);
         const allPosts = watchedState.posts.concat(posts);
         watchedState.posts = allPosts;
+        console.log(watchedState.posts);
       })
       .then(() => {
         watchedState.form.isValid = true; // watchedState changes

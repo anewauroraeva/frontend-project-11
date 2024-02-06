@@ -42,7 +42,7 @@ const createContainer = (i18nInstance, item, watchedState) => {
   if (item === 'posts') {
     // forEach???
     watchedState.posts.forEach((post) => {
-      console.log('forEach posts');
+      // console.log('forEach posts');
       const postElement = document.createElement('li');
       postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
@@ -61,7 +61,7 @@ const createContainer = (i18nInstance, item, watchedState) => {
       watchBtn.dataset.bsToggle = 'modal';
       watchBtn.dataset.bsTarget = '#modal';
       watchBtn.textContent = i18nInstance.t('view');
-      console.log(itemList);
+      // console.log(itemList);
       postElement.append(postLinkedTitle, watchBtn);
       itemList.append(postElement);
     });
@@ -116,6 +116,10 @@ const render = (watchedState, elements, i18nInstance) => {
     }
     case 'sent': {
       console.log('sent');
+      const postContainer = document.querySelector('.posts');
+      postContainer.textContent = '';
+      const feedContainer = document.querySelector('.feeds');
+      feedContainer.textContent = '';
       handleSuccess(elements, watchedState);
       createContainer(i18nInstance, 'feeds', watchedState);
       createContainer(i18nInstance, 'posts', watchedState);
