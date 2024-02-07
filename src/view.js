@@ -21,7 +21,7 @@ const createContainer = (i18nInstance, item, watchedState) => {
   cardContainer.append(itemList);
 
   if (item === 'feeds') {
-    console.log('feeds');
+    // console.log('feeds');
     watchedState.feeds.forEach((feed) => {
       const feedElement = document.createElement('li');
       feedElement.classList.add('list-group-item', 'border-0', 'border-end-0');
@@ -101,7 +101,7 @@ const render = (watchedState, elements, i18nInstance) => {
 
   switch (watchedState.form.formState) {
     case 'idle': {
-      console.log('idle');
+      // console.log('idle');
       feedback.textContent = '';
       feedback.classList.remove('text-success');
       feedback.classList.add('text-danger');
@@ -110,12 +110,12 @@ const render = (watchedState, elements, i18nInstance) => {
       break;
     }
     case 'sending': {
-      console.log('sending');
+      // console.log('sending');
       submit.disabled = watchedState.ui.submitDisabled;
       break;
     }
     case 'sent': {
-      console.log('sent');
+      // console.log('sent');
       const postContainer = document.querySelector('.posts');
       postContainer.textContent = '';
       const feedContainer = document.querySelector('.feeds');
@@ -132,7 +132,7 @@ const render = (watchedState, elements, i18nInstance) => {
       break;
     }
     case 'failed': {
-      console.log('fail');
+      // console.log('fail');
       handleError(elements, watchedState);
       break;
     }
