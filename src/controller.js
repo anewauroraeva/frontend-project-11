@@ -32,12 +32,14 @@ const getRssData = (link) => {
 };
 
 const normalizeFeed = (feed) => {
-  const { feedTitle, feedDescription } = feed;
+  const { feedTitle, feedDescription, link } = feed;
   const fullFeed = {
     id: Number(_.uniqueId()),
     title: feedTitle,
     description: feedDescription,
+    link,
   };
+  console.log(fullFeed);
   return fullFeed;
 };
 
@@ -57,20 +59,41 @@ const normalizePosts = (parcedPosts) => {
 
 const defTimeout = 5000;
 
-const updatePosts = (state, timeout) => {
+const updatePosts = (state/* , timeout */) => {
   const stateCopy = _.cloneDeep(state);
   // console.log(stateCopy);
   const { feeds } = stateCopy;
+  // console.log(feeds);
+  // console.log('dostali feeds');
   const currentPosts = stateCopy;
-  /* const getNormPosts =  */feeds.map(({ link }) => getRssData(link)
-    .then((resp) => {
-      parse(resp.data.contents);
-      console.log(parse(resp.data.contents));
-    })
-    .then((parsedData) => normalizePosts(parsedData.posts))
-    /* .catch((error) => {
-      stateCopy.error = error.message;
-    })); */
+  // console.log('dostali aktualnye posty');
+  /* const addNewPosts =  */
+  const parsedFeeds = feeds.map(({ link }) => {
+    console.log(feeds);
+    console.log(getRssData(link));
+    const dataPromise = getRssData(link)
+      .then((response) => {
+        // console.log(response);
+        // console.log('before parsing');
+        // console.log((response.data.contents));
+        parse(response.data.contents);
+        console.log(parse(response.data.contents));
+      })
+      .then((parsedData) => {
+        console.log(normalizePosts(parsedData.posts));
+        normalizePosts(parsedData.posts);
+      })
+      .catch((error) => {
+        stateCopy.error = error.message;
+      });
+    return dataPromise;
+  });
+
+  Promise.all([parsedFeeds])
+    /* .then((parsedData) => {
+      console.log(normalizePosts(parsedData.posts));
+      normalizePosts(parsedData.posts);
+    }) */
     .then((normPosts) => {
       console.log(normPosts);
       const newPostsLinks = normPosts.map((nPost) => nPost.link);
@@ -82,8 +105,27 @@ const updatePosts = (state, timeout) => {
       stateCopy.error = error.message;
     })
     .finally(() => {
-      setTimeout(updatePosts(state), timeout);
-    }));
+      setTimeout(() => updatePosts(state), defTimeout);
+    });
+  /* getRssData(link)
+    .then((resp) => {
+      parse(resp.data.contents);
+      console.log(parse(resp.data.contents));
+    })
+    .then((parsedData) => normalizePosts(parsedData.posts))
+    .then((normPosts) => {
+      console.log(normPosts);
+      const newPostsLinks = normPosts.map((nPost) => nPost.link);
+      const currPostsLinks = currentPosts.map((currPost) => currPost.link);
+      const filteredNewPosts = newPostsLinks.filter((nPost) => !currPostsLinks.includes(nPost));
+      state.posts.unshift(filteredNewPosts);
+    })
+    .catch((error) => {
+      stateCopy.error = error.message;
+    })
+    .finally(() => {
+      setTimeout(() => updatePosts(state), defTimeout);
+    })); */
 };
 
 const app = () => {
@@ -142,6 +184,7 @@ const app = () => {
       .then((response) => parse(response.data.contents))
       .then((parsedData) => {
         const feed = normalizeFeed(parsedData.feed);
+        feed.link = url;
         watchedState.feeds.unshift(feed);
         const posts = normalizePosts(parsedData.posts);
         const allPosts = watchedState.posts.concat(posts);
