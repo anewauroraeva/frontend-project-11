@@ -28,7 +28,8 @@ const parse = (data) => {
       return { title, description, link };
     });
 
-    return { feed, posts };
+    const resolveData = { feed, posts };
+    return Promise.resolve(resolveData);
   }
 };
 
