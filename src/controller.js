@@ -60,38 +60,45 @@ const normalizePosts = (parcedPosts) => {
 
 const defTimeout = 5000;
 
-const updatePosts = (state/* , timeout */) => {
+const updatePosts = (state) => {
   const stateCopy = _.cloneDeep(state);
   // console.log(stateCopy);
   const { feeds } = stateCopy;
   // console.log(feeds);
-  const currentPosts = stateCopy.posts;
   // console.log('currPosts', currentPosts); // undefined or []
   // console.log('dostali aktualnye posty');
   /* const addNewPosts =  */
   const parsedFeedsPromise = feeds.map(({ link }) => getRssData(link)
     .then((response) => parse(response.data.contents)) // OK
-    /* .then((response) => {
-      // console.log(response); // ok
-      // console.log('before parsing');
-      // console.log((response.data.contents));
-      parse(response.data.contents);
-      console.log(parse(response.data.contents));
-    }) */
     .then((parsedData) => normalizePosts(parsedData.posts)) // { // OK
     /* console.log(parsedData.posts); // OK
       normalizePosts(parsedData.posts);
       console.log(normalizePosts(parsedData.posts)); // OK
     }) */
     .then((normPosts) => {
-      console.log(normPosts); // OK
-      const newPostsLinks = normPosts.map((nPost) => nPost.link);
-      console.log(newPostsLinks); // OK
+      /* const currentPosts = stateCopy.posts;
+      const currentPostsLinks = currentPosts.map((cPost) => cPost.link);
+      const filtered = normPosts.filter((nPost) => {
+        // const normLink = nPost.link;
+        const result = !currentPostsLinks.includes(nPost.link);
+        return result;
+      });
+      state.posts.unshift(filtered); */
+      const currentPosts = stateCopy.posts;
+      // console.log(stateCopy.posts);
+      // console.log(normPosts); // OK
+      // const { title, description, link } = normPost;
+      // const newPostsLinks = normPosts.map((nPost) => nPost.link);
+      // console.log(newPostsLinks); // OK new added
       // console.log(stateCopy.posts); // new posts are adding but it's [] or undefined
       const currPostsLinks = currentPosts.map((currPost) => currPost.link);
-      console.log('curr', currPostsLinks);
-      const filteredNewPosts = newPostsLinks.filter((nPost) => !currPostsLinks.includes(nPost));
-      state.posts.unshift(filteredNewPosts);
+      // console.log('curr', currPostsLinks); // shows all li's but new are empty arrays
+      const filteredNewPosts = normPosts.filter((nPost) => !currPostsLinks.includes(nPost.link));
+      // console.log(filteredNewPosts);
+      // state.posts.unshift(filteredNewPosts);
+      filteredNewPosts.forEach((fPost) => {
+        state.posts.unshift(fPost);
+      });
     })
     .catch((error) => {
       stateCopy.error = error;

@@ -19,6 +19,7 @@ const createContainer = (i18nInstance, item, watchedState) => {
   const itemList = document.createElement('ul');
   itemList.classList.add('list-group', 'border-0', 'rounded-0');
   cardContainer.append(itemList);
+  // console.log(cardContainer);
 
   if (item === 'feeds') {
     // console.log('feeds');
@@ -45,7 +46,7 @@ const createContainer = (i18nInstance, item, watchedState) => {
       // console.log('forEach posts');
       const postElement = document.createElement('li');
       postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-
+      // console.log(postElement);
       const postLinkedTitle = document.createElement('a');
       postLinkedTitle.classList.add('fw-bold');
       postLinkedTitle.setAttribute('href', post.link);
@@ -64,6 +65,7 @@ const createContainer = (i18nInstance, item, watchedState) => {
       // console.log(itemList);
       postElement.append(postLinkedTitle, watchBtn);
       itemList.append(postElement);
+      // console.log(postElement);
     });
   }
 };
