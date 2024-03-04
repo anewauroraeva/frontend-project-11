@@ -33,14 +33,12 @@ const getRssData = (link) => {
 
 const normalizeFeed = (feed) => {
   const { feedTitle, feedDescription, link } = feed;
-  // console.log(link);
   const fullFeed = {
     id: Number(_.uniqueId()),
     title: feedTitle,
     description: feedDescription,
     link,
   };
-  console.log(fullFeed);
   return fullFeed;
 };
 
@@ -157,6 +155,7 @@ const app = () => {
     addedLinks: [],
     feeds: [],
     posts: [],
+    viewedPosts: [],
     error: '',
     ui: {
       submitDisabled: false,
@@ -200,6 +199,7 @@ const app = () => {
       })
       .then(() => {
         watchedState.form.isValid = true;
+        watchedState.error = '';
         watchedState.addedLinks.push(url);
         watchedState.ui.submitDisabled = false;
         watchedState.form.formState = 'sent';
@@ -227,6 +227,36 @@ const app = () => {
   });
   console.log(watchedState);
   // updatePosts(watchedState, 5000);
+  console.log(document.querySelector('button[data-bs-toggle="modal"]'));
+  // const postsDiv = document.querySelector('.posts');
+
+  // if (postsDiv.children) {
+  /* const idleViewButtons = postsDiv.querySelectorAll('button');
+    console.log(idleViewButtons);
+    idleViewButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const { target } = e;
+        const btnId = target.dataset.id;
+        const viewedPost = watchedState.posts.find(({ id }) => id === btnId);
+        console.log(viewedPost);
+        watchedState.viewedPosts.push(viewedPost);
+      });
+    }); */
+  // }
+  console.log(watchedState);
+
+  // const postsDiv = document.querySelector('.posts');
+  /* const idleViewButtons = postsDiv.querySelectorAll('button');
+  console.log(idleViewButtons);
+  idleViewButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      console.log(e.target);
+      const { target } = e;
+      const btnId = target.dataset.id;
+      const getViewedLink = document.querySelector(`a[data-id = ${btnId}]`);
+      console.log(getViewedLink);
+    });
+  }); */
 };
 
 export default app;

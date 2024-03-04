@@ -44,16 +44,17 @@ const createContainer = (i18nInstance, item, watchedState) => {
     // forEach???
     watchedState.posts.forEach((post) => {
       // console.log('forEach posts');
+      const { link, id, title } = post;
       const postElement = document.createElement('li');
       postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       // console.log(postElement);
       const postLinkedTitle = document.createElement('a');
       postLinkedTitle.classList.add('fw-bold');
-      postLinkedTitle.setAttribute('href', post.link);
-      postLinkedTitle.dataset.id = post.id;
+      postLinkedTitle.setAttribute('href', link);
+      postLinkedTitle.dataset.id = id;
       postLinkedTitle.setAttribute('target', '_blank');
       postLinkedTitle.setAttribute('rel', 'noopener noreferrer');
-      postLinkedTitle.textContent = post.title;
+      postLinkedTitle.textContent = title;
 
       const watchBtn = document.createElement('button');
       watchBtn.setAttribute('type', 'button');
